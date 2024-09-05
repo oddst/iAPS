@@ -12,7 +12,8 @@ struct RoundedBackground: ViewModifier {
         content
             .padding()
             .background(
-                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                Rectangle()
+                    // RoundedRectangle(cornerRadius: 8, style: .continuous)
                     .fill()
                     .foregroundColor(color)
             )
@@ -30,10 +31,38 @@ struct CapsulaBackground: ViewModifier {
         content
             .padding()
             .background(
-                Capsule()
+                Rectangle()
+                    // Capsule()
                     .fill()
                     .foregroundColor(color)
             )
+    }
+}
+
+struct CompactSectionSpacing: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 17, *) {
+            return content
+                .listSectionSpacing(.compact)
+        } else {
+            return content }
+    }
+}
+
+struct InfoPanelBackground: View {
+    let colorScheme: ColorScheme
+    var body: some View {
+        if #available(iOS 17.0, *) {
+            Rectangle()
+                .stroke(.gray, lineWidth: 2)
+                .fill(colorScheme == .light ? .white : .black)
+                .frame(height: 24)
+        } else {
+            Rectangle()
+                .strokeBorder(.gray, lineWidth: 2)
+                .background(Rectangle().fill(colorScheme == .light ? .white : .black))
+                .frame(height: 24)
+        }
     }
 }
 
@@ -106,7 +135,8 @@ struct ColouredRoundedBackground: View {
     @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
-        RoundedRectangle(cornerRadius: 15)
+        Rectangle()
+            // RoundedRectangle(cornerRadius: 15)
             .fill(
                 colorScheme == .dark ? .black :
                     Color.white
@@ -130,10 +160,10 @@ struct LoopEllipse: View {
     let stroke: Color
     var body: some View {
         RoundedRectangle(cornerRadius: 15)
-            .stroke(stroke, lineWidth: 2)
+            .stroke(stroke, lineWidth: colorScheme == .light ? 2 : 1)
             .background(
                 RoundedRectangle(cornerRadius: 15)
-                    .fill(Color.white).opacity(colorScheme == .light ? 0.2 : 0.08)
+                    .fill(colorScheme == .light ? .white : .black)
             )
     }
 }
@@ -143,7 +173,7 @@ struct TimeEllipse: View {
     let characters: Int
     var body: some View {
         RoundedRectangle(cornerRadius: 15)
-            .fill(Color.gray).opacity(colorScheme == .light ? 0.2 : 0.08)
+            .fill(Color.gray).opacity(colorScheme == .light ? 0.2 : 0.2)
             .frame(width: CGFloat(characters * 7), height: 25)
     }
 }
@@ -153,6 +183,37 @@ struct HeaderBackground: View {
     var body: some View {
         Rectangle()
             .fill(colorScheme == .light ? .gray.opacity(IAPSconfig.backgroundOpacity) : Color.header2.opacity(1))
+    }
+}
+
+struct ClockOffset: View {
+    let mdtPump: Bool
+    var body: some View {
+        ZStack {
+            Image(systemName: "clock.fill")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(maxHeight: 20)
+                .symbolRenderingMode(.palette)
+                .foregroundStyle(Color(.warning))
+                .offset(x: 10, y: !mdtPump ? -20 : -13)
+        }
+    }
+}
+
+struct TooOldValue: View {
+    var body: some View {
+        ZStack {
+            Image(systemName: "cicle.fill")
+                .resizable()
+                .frame(maxHeight: 20)
+                .symbolRenderingMode(.palette)
+                .foregroundStyle(Color(.warning).opacity(0.5))
+                .offset(x: 5, y: -13)
+                .overlay {
+                    Text("Old").font(.caption)
+                }
+        }
     }
 }
 
@@ -290,6 +351,10 @@ extension View {
         onTapGesture {
             view.state.showModal(for: screen)
         }
+    }
+
+    func compactSectionSpacing() -> some View {
+        modifier(CompactSectionSpacing())
     }
 
     func asAny() -> AnyView { .init(self) }
